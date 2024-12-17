@@ -1,0 +1,161 @@
+{
+    "users": {
+        "user1": {
+            "name": "Alice",
+            "avatar": "avatars/alice.png",
+            "groups": ["group1", "group2"],
+            "invites": [
+                ["group1", "2024-01-01", null],
+                ["group2", "2024-01-02", null]
+            ],
+            "people": {
+                "user2": {
+                    "name": "David",
+                    "transactions": [
+                        {
+                            "name": "Rent",
+                            "amount": 1000,
+                            "currency": "USD",
+                            "creditor": "user1",
+                            "debtors": ["user2"],
+                            "date": "2024-01-10"
+                        },
+                        {
+                            "name": "Groceries",
+                            "amount": 150,
+                            "currency": "USD",
+                            "creditor": "user2",
+                            "debtors": ["user1"],
+                            "date": "2024-01-12"
+                        }
+                    ]
+                }
+            },
+            "settings": {
+                "theme": "dark",
+                "notifications": "enabled"
+            }
+        },
+        "user2": {
+            "name": "David",
+            "avatar": "avatars/david.png",
+            "groups": ["group1", "group3"],
+            "invites": [
+                ["group1", "2024-01-03", null],
+                ["group3", "2024-01-04", null]
+            ],
+            "people": {
+                "user1": {
+                    "name": "Alice",
+                    "transactions": [
+                        {
+                            "name": "Utilities",
+                            "amount": 200,
+                            "currency": "USD",
+                            "creditor": "user2",
+                            "debtors": ["user1"],
+                            "date": "2024-01-15"
+                        }
+                    ]
+                },
+                "user3": {
+                    "name": "Eve",
+                    "transactions": [
+                        {
+                            "name": "Dinner",
+                            "amount": 100,
+                            "currency": "EUR",
+                            "creditor": "user2",
+                            "debtors": ["user3"],
+                            "date": "2024-01-20"
+                        }
+                    ]
+                }
+            },
+            "settings": {
+                "theme": "light",
+                "notifications": "disabled"
+            }
+        },
+        "user3": {
+            "name": "Eve",
+            "avatar": "avatars/eve.png",
+            "groups": ["group2", "group3"],
+            "invites": [
+                ["group2", "2024-01-05", null],
+                ["group3", "2024-01-06", null]
+            ],
+            "people": {
+                "user2": {
+                    "name": "David",
+                    "transactions": [
+                        {
+                            "name": "Coffee",
+                            "amount": 20,
+                            "currency": "USD",
+                            "creditor": "user3",
+                            "debtors": ["user2"],
+                            "date": "2024-01-22"
+                        }
+                    ]
+                }
+            },
+            "settings": {
+                "theme": "blue",
+                "notifications": "enabled"
+            }
+        }
+    },
+    "groups": {
+        "group1": {
+            "name": "Friends",
+            "avatar": "avatars/group1.png",
+            "members": ["user1", "user2"],
+            "transactions": [
+                {
+                    "name": "Party",
+                    "amount": 300,
+                    "currency": "USD",
+                    "creditor": "user1",
+                    "debtors": ["user2"],
+                    "date": "2024-02-01"
+                }
+            ]
+        },
+        "group2": {
+            "name": "Colleagues",
+            "avatar": "avatars/group2.png",
+            "members": ["user1", "user3"],
+            "transactions": [
+                {
+                    "name": "Office Supplies",
+                    "amount": 50,
+                    "currency": "USD",
+                    "creditor": "user3",
+                    "debtors": ["user1"],
+                    "date": "2024-02-05"
+                }
+            ]
+        },
+        "group3": {
+            "name": "Family",
+            "avatar": "avatars/group3.png",
+            "members": ["user2", "user3"],
+            "transactions": [
+                {
+                    "name": "Vacation",
+                    "amount": 1000,
+                    "currency": "EUR",
+                    "creditor": "user2",
+                    "debtors": ["user3"],
+                    "date": "2024-02-10"
+                }
+            ]
+        }
+    },
+    "passwords": {
+        "user1": "password123",
+        "user2": "password456",
+        "user3": "password789"
+    }
+}
