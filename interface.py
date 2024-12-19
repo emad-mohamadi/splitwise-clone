@@ -15,7 +15,7 @@ class Frame(CTkFrame):
 
 
 class SideBar:
-    def __init__(self, root, options, color="gray40", hover_color="gray65", click_color="gray81", size=40):
+    def __init__(self, root, options, color="gray40", hover_color="gray65", click_color="gray81", size=40, default_tab="home"):
         self.color = color
         self.click_color = click_color
         self.side_bar = Frame(
@@ -24,7 +24,8 @@ class SideBar:
         self.buttons = {name: None for name in options}
         self.panels = {name: None for name in options}
         for name, (pic, side) in options.items():
-            self.panels[name] = Frame(root, width=300, corner_radius=0)
+            self.panels[name] = Frame(
+                root, width=300, corner_radius=0)
             icon = Frame.picture(pic, size=(size, size))
             self.buttons[name] = CTkButton(
                 self.side_bar,
@@ -38,7 +39,8 @@ class SideBar:
                 corner_radius=0
             )
             self.buttons[name].pack(fill="both", side=side)
-        self.button_handler("home")()
+        self.default_tab = default_tab
+        self.button_handler(self.default_tab)()
         return
 
     def button_handler(self, button_name):
@@ -47,6 +49,7 @@ class SideBar:
                 if name == button_name:
                     button.configure(fg_color=self.click_color)
                     self.panels[name].pack(side=LEFT, fill="y")
+                    self.default_tab = button_name
                 else:
                     self.panels[name].pack_forget()
                     button.configure(fg_color=self.color)
@@ -56,7 +59,7 @@ class SideBar:
 class FrameList:
     links = {}
 
-    def __init__(self, root, header, objects, command=None, width=280, height=150, corner_radius=15, font=("Calibry", 18), title_color="gray40", color=None):
+    def __init__(self, root, header, objects, command=None, width=280, height=150, corner_radius=15, font=("Calibry", 18), title_color="gray40", color=None, font_dif=5):
         self.items = {name: None for name in objects["name"]}
         self.title = Frame(
             root, height=header["height"], width=width, fg_color="transparent")
@@ -68,33 +71,37 @@ class FrameList:
         if header["button"]:
             widget = CTkButton(self.title, width=header["button"][1], height=30, command=command,
                                corner_radius=corner_radius, text=header["button"][0])
-            widget.place(x=width-header["button"][1]-10, y=7)
+            widget.place(x=width-header["button"][1]-20, y=7)
         if header["text"]:
             widget = CTkLabel(
                 self.title, text=header["text"], font=(font[0], font[1]-4), fg_color="transparent", wraplength=280, justify="left")
             widget.place(x=6, y=15+header["font"][1])
 
+        scroll = CTkScrollableFrame(
+            root, height=header["height"], width=width, fg_color="transparent", scrollbar_button_color="gray80", scrollbar_button_hover_color="gray80", )
+        scroll.pack(fill="both", expand=True, side=TOP, padx=0, pady=0)
+
         for name in self.items:
             i = objects["name"].index(name)
             self.items[name] = Frame(
-                root, height=height, width=width, corner_radius=corner_radius, fg_color=color)
-            self.items[name].pack(side=TOP, padx=10, pady=5, fill="x")
+                scroll, height=height, width=width, corner_radius=corner_radius, fg_color=color)
+            self.items[name].pack(side=TOP, padx=5, pady=5, fill="x")
 
             widget = CTkLabel(
                 self.items[name], text=objects["label"][i], font=font, fg_color="transparent")
             widget.place(x=10, y=5)
 
             if objects["button"][i]:
-                widget = CTkButton(self.items[name], width=objects["button"][i][1], height=30,
-                                   corner_radius=corner_radius-5, text=objects["button"][i][0], command=self.button_handler(name))
-                widget.place(x=width-objects["button"][i][1]-10, y=5)
+                widget = CTkButton(self.items[name], width=objects["button"][i][1], height=30, fg_color=objects["button"][i][2][0], hover_color=objects["button"][i][2][1],
+                                   corner_radius=corner_radius-5, text=objects["button"][i][0], command=self.button_handler(name) if not objects["button"][i][3] else objects["button"][i][3])
+                widget.place(x=width-objects["button"][i][1]-20, y=5)
 
             textbox = Frame(
                 self.items[name], fg_color="transparent", width=10, height=10)
             textbox.place(x=10, y=12+font[1])
             for j in range(len(objects["text"][i])):
                 widget = CTkLabel(
-                    textbox, text=objects["text"][i][j][0], height=1, font=(font[0], font[1]-5), fg_color="transparent", wraplength=220, justify="left", text_color=objects["text"][i][j][1])
+                    textbox, text=objects["text"][i][j][0], height=1, font=(font[0], font[1]-font_dif), fg_color="transparent", wraplength=220, justify="left", text_color=objects["text"][i][j][1])
                 widget.pack(padx=1, pady=0, anchor="nw")
 
     def add_link(self, links):
@@ -134,10 +141,10 @@ class MainPanel(Frame):
         for i in range(len(options["label"])):
             if options["label"][i]:
                 widget = CTkButton(
-                    frame, corner_radius=corner_radius, text=options["label"][i], width=20, height=20, font=("Arial Bold", 12), fg_color=options["color"][i], hover_color=hover_color)
+                    frame, corner_radius=corner_radius, text=options["label"][i], width=20, height=20, font=("Arial Bold", 12), fg_color=options["color"][i], hover_color=hover_color, command=options["command"][i])
             else:
                 widget = CTkButton(
-                    frame, image=options["color"][i], text="", corner_radius=corner_radius, width=10, height=10, font=("Arial Bold", 10), fg_color="transparent", hover_color=hover_color)
+                    frame, image=options["color"][i], text="", corner_radius=corner_radius, width=10, height=10, font=("Arial Bold", 10), fg_color="transparent", hover_color=hover_color, command=options["command"][i])
             widget.pack(side=LEFT, padx=1, pady=0)
         return
 
@@ -145,7 +152,7 @@ class MainPanel(Frame):
         frame = Frame(self, width=10, height=10)
         frame.pack(pady=9, anchor="ne")
         for i in range(len(buttons["label"])):
-            widget = CTkButton(frame, text=buttons["label"][i], width=20, height=25, corner_radius=corner_radius,
+            widget = CTkButton(frame, text=buttons["label"][i], width=20, height=25, corner_radius=corner_radius, command=buttons["command"][i],
                                fg_color=buttons["color"][i][0], hover_color=buttons["color"][i][1], font=("Arial", 12, "bold"))
             widget.pack(anchor="ne", pady=2, padx=15)
         return

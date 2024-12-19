@@ -1,10 +1,11 @@
-from json import load
+from json import load, dump
 from interface import *
 from user import User, Group
 from alg import Network
 from server import Data
 from uuid import uuid1
 from datetime import datetime as dt
+from CTkScrollableDropdown import *
 
 config = {
     "icons": {
@@ -65,9 +66,11 @@ class App(CTk):
         set_appearance_mode(appearance_mode)
         self.scr_w = self.winfo_screenwidth()//2
         self.scr_h = self.winfo_screenheight()//2
-        self.geometry(f"{self.scr_w}x{self.scr_h}+{self.scr_w //
+        self.geometry(f"{int(1.3*self.scr_w)}x{self.scr_h}+{self.scr_w //
                       2}+{self.scr_h//2}")  # Initial window size
         self.title(title)  # seting window title
+        self.last_tab = "home"
+        self.last_panel = "empty"
         return
 
     def load(self, id, data):
@@ -81,25 +84,27 @@ class App(CTk):
 
         self.root = Frame(self)
         self.root.pack(fill="both", expand=True)
-        side_bar = SideBar(self.root, config["app"]["sidebar"])
+        self.side_bar = SideBar(
+            self.root, config["app"]["sidebar"], default_tab=self.last_tab)
 
         objects = {
             "name": ["1", "2"],
             "label": ["Title1", "Title2"],
-            "button": [("View", 45), ("View", 45)],
+            "button": [("View", 45, (None, None), None), ("View", 45, (None, None), None)],
             "text": [[], []],
         }
-        home = FrameList(side_bar.panels["home"], config["app"]
-                         ["sidepanels"]["home"], objects, height=80)
+        home = FrameList(self.side_bar.panels["home"], config["app"]
+                         ["sidepanels"]["home"], objects, height=80, width=320)
 
         objects = {
             "name": [group.id for group in groups_list],
             "label": [group.name for group in groups_list],
-            "button": [("View", 45) for _ in groups_list],
+            "button": [("View", 45, (None, None), None) for _ in groups_list],
             "text": [[] for _ in groups_list]
         }
-        groups = FrameList(side_bar.panels["groups"], config["app"]
-                           ["sidepanels"]["groups"], objects, height=80, command=self.new_group)
+        self.groups = FrameList(self.side_bar.panels["groups"], config["app"]
+                                ["sidepanels"]["groups"], objects, height=80, command=self.new_group, width=320)
+
         # connection_status = CTkLabel(
         #     side_bar.panels["groups"], text="You're Offline", height=25, font=("Arial Bold", 12), corner_radius=0, bg_color="DarkGoldenrod1")
         # connection_status.pack(side=BOTTOM, padx=0, pady=0, fill="x")
@@ -107,20 +112,20 @@ class App(CTk):
         objects = {
             "name": [user.id for user in people_list],
             "label": [user.name for user in people_list],
-            "button": [("View", 45), ("View", 45)],
+            "button": [("View", 45, (None, None), None) for _ in people_list],
             "text": [(("You are owed 0.2$", "green"), ("And you owe 0.8$", "red"), ("Net balance: -0.6$", "blue")), (("You are owed 1.3$", "green"), ("And you owe 0.9$", "red"), ("Net balance: +0.4$", "blue"))],
         }
-        people = FrameList(side_bar.panels["people"], config["app"]
-                           ["sidepanels"]["people"], objects, height=80, command=self.refresh)
+        people = FrameList(self.side_bar.panels["people"], config["app"]
+                           ["sidepanels"]["people"], objects, height=80, command=self.save, width=320)
 
         objects = {
             "name": [invite[0]+str(invite[2]) for invite in self.user.invites],
-            "label": [f"{self.data["users"][self.data["groups"][invite[0]]["members"][0]]["name"]} invited {"you" if not invite[2] else self.data["users"][invite[2]]["name"]} to {self.data["groups"][invite[0]]["name"]}." for invite in self.user.invites],
-            "button": [None]*len(self.user.invites),
-            "text": [((invite[1][:16], "gray50"),) for invite in self.user.invites],
+            "label": [f"{self.data["users"][self.data["groups"][invite[0]]["members"][0]]["name"]} invited {"you" if not invite[2] else self.data["users"][invite[2]]["name"]} to {self.data["groups"][invite[0]]["name"]}" for invite in self.user.invites],
+            "button": [("Delete", 53, ("red3", "red4"), self.invite_action(invite, False)) if invite[2] else ("Accept", 56, (None, None), self.invite_action(invite, True)) for invite in self.user.invites],
+            "text": [((invite[1][:16], "gray50"),) for invite in self.user.invites]
         }
-        invites = FrameList(side_bar.panels["invites"], config["app"]
-                            ["sidepanels"]["invites"], objects, height=50, font=("Arial", 16))
+        invites = FrameList(self.side_bar.panels["invites"], config["app"]
+                            ["sidepanels"]["invites"], objects, height=50, font=("Arial", 14), font_dif=2, width=320)
 
         empty = MainPanel(self.root)
         empty.add_title(text="There's nothing to show.",
@@ -129,14 +134,19 @@ class App(CTk):
         links = {"empty": empty}
         for gr in groups_list:
             options = {
-                "label": [data["users"][id]["name"] for id in gr.members] + [None],
-                "color": ["gray60" if i else "gray30" for i in range(len(gr.members))] + [Frame.picture(config["icons"]["add-member"], (20, 20))],
-                "command": [None] * (len(gr.members)+1),
+                "label": [data["users"][id]["name"] for id in gr.members],
+                "color": ["gray60" if i else "gray30" for i in range(len(gr.members))],
+                "command": [None] * len(gr.members),
             }
+            if gr.members[0] == self.user.id:
+                options["label"].append(None)
+                options["color"].append(Frame.picture(
+                    config["icons"]["add-member"], (20, 20)))
+                options["command"].append(self.new_invite(gr))
             buttons = {
-                "label": ["New Expense", "Delete Group"],
+                "label": ["New Expense", "Delete Group" if gr.members[0] == self.user.id else "Leave Group"],
                 "color": [(None, None), ("red3", "red4")],
-                "comand": [None, None],
+                "command": [self.new_group_expense(gr), None],
             }
             main_panel = MainPanel(self.root)
             main_panel.add_title(text=gr.name)
@@ -183,14 +193,14 @@ class App(CTk):
             widget = FrameList(summary, header, objects, width=30,
                                height=30, title_color="gray50", font=("Arial", 14))
 
-        groups.add_link(links)
+        self.groups.add_link(links)
 
         links = {"empty": empty}
         for us in people_list:
             buttons = {
                 "label": ["New Expense", f"Delete {us.name}"],
                 "color": [(None, None), ("red3", "red4")],
-                "comand": [None, None]
+                "command": [None, None]
             }
             main_panel = MainPanel(self.root)
             main_panel.add_title(text=us.name)
@@ -200,9 +210,96 @@ class App(CTk):
             links[us.id] = main_panel
 
         people.add_link(links)
-        groups.button_handler("empty")()
+        self.groups.button_handler("empty")()
 
         return
+
+    def new_group_expense(self, group: Group):
+        def f():
+            self.win = CTkToplevel(self)
+            self.win.title("Create New Group")
+            self.win.geometry(f"{self.scr_w//2}x{int(0.85*self.scr_h)
+                                                 }+{int(0.75*self.scr_w)}+{self.scr_h//2}")
+            self.win.lift()
+            self.win.focus()
+            self.win.attributes("-topmost", True)
+            frame = Frame(self.win, corner_radius=20)
+            frame.pack(expand=True, pady=20, padx=20)
+
+            CTkLabel(frame, text="Add expense", font=(
+                "Arial Bold", 25), text_color="gray40").pack(padx=15, pady=10, anchor="nw")
+
+            entry = Frame(frame, height=10, fg_color="transparent")
+            entry.pack(anchor="nw", padx=10, pady=5, fill="x")
+            widget = CTkLabel(entry, text="Paid by", font=("Arial", 18))
+            widget.pack(side=LEFT, padx=5)
+            creditor = CTkOptionMenu(entry, height=25, width=70, values=[self.data["users"][id]["name"] for id in group.members],
+                                     font=("Arial", 16, "bold"))
+
+            creditor.pack(side=LEFT, padx=5)
+            creditor.set("You")
+            widget = CTkLabel(entry, text="in", font=("Arial", 18))
+            widget.pack(side=LEFT, padx=5)
+            currency = CTkOptionMenu(entry, height=25, width=30, values=["USD", "CD", "EUR", "IRR"],
+                                     font=("Arial", 16))
+            currency.pack(side=LEFT, padx=5)
+            currency.set("USD")
+
+            tabs = CTkTabview(frame, height=200, width=100,
+                              corner_radius=10)
+            tabs.pack(fill="both", side=BOTTOM, padx=10, pady=10, expand=True)
+
+            tabs.add("Equally")
+            tabs.add("Unequally")
+            tabs.add("By ratio")
+
+            eq = CTkScrollableFrame(tabs.tab("Equally"), fg_color="transparent",
+                                    scrollbar_button_color="gray70", scrollbar_button_hover_color="gray75")
+            uneq = CTkScrollableFrame(tabs.tab("Unequally"), fg_color="transparent",
+                                      scrollbar_button_color="gray70", scrollbar_button_hover_color="gray75")
+            uneq.pack(fill="both", padx=0, pady=0)
+            br = CTkScrollableFrame(tabs.tab("By ratio"), fg_color="transparent",
+                                    scrollbar_button_color="gray70", scrollbar_button_hover_color="gray75")
+
+            widget = Frame(tabs.tab("Equally"), fg_color="transparent")
+            widget.pack(side=TOP, fill="x")
+            CTkLabel(widget, width=10, font=(
+                "Arial", 16), text="Total amount", text_color="gray50").pack(side=LEFT, padx=5)
+            amount = CTkEntry(widget, height=25, border_width=0, width=100,
+                              fg_color="gray70", font=("Arial", 14))
+            amount.pack(side=RIGHT, fill="x", padx=3)
+            debtors = {id: StringVar(value="") for id in group.members}
+            for id in group.members:
+                CTkCheckBox(eq, height=5, font=("Arial", 16), border_width=2, corner_radius=15, text=self.data["users"][id]["name"], variable=debtors[id], onvalue=id, offvalue="").pack(
+                    anchor="nw", pady=5)
+            CTkButton(tabs.tab("Equally"), height=30, width=10, text="Add expense", command=self.create_group_expense("eq", creditor, debtors, amount),
+                      corner_radius=15).pack(side=BOTTOM, pady=0)
+            eq.pack(fill="both", padx=0, pady=0)
+
+            widget = Frame(tabs.tab("By ratio"), fg_color="transparent")
+            widget.pack(side=TOP, fill="x")
+            CTkLabel(widget, width=10, font=(
+                "Arial", 16), text="Total amount", text_color="gray50").pack(side=LEFT, padx=5)
+            amount = CTkEntry(widget, height=25, border_width=0, width=100,
+                              fg_color="gray70", font=("Arial", 14))
+            amount.pack(side=RIGHT, fill="x", padx=3)
+            debtors = {id: None for id in group.members}
+            for id in group.members:
+                widget = Frame(br, fg_color="transparent")
+                widget.pack(side=TOP, fill="x", pady=2)
+                CTkLabel(widget, width=10, font=(
+                    "Arial", 16), text=self.data["users"][id]["name"]).pack(side=LEFT, padx=0)
+                debtors[id] = CTkEntry(widget, height=25, border_width=0, width=30,
+                                       fg_color="gray70", font=("Arial", 14))
+                debtors[id].pack(side=RIGHT, fill="x")
+            CTkButton(tabs.tab("By ratio"), height=30, width=10, text="Add expense", command=self.create_group_expense("br", debtors, creditor, amount),
+                      corner_radius=15).pack(side=BOTTOM, pady=0)
+            br.pack(fill="both", padx=0, pady=0)
+
+        return f
+
+    def create_group_expense(self, split_type, creditor, debtors, amount=None):
+        pass
 
     def simplify(self, group: Group):
         network = Network(group.members)
@@ -212,18 +309,20 @@ class App(CTk):
                 network.add_debt(debtor, expense["creditor"], amount)
         return network.settled_up()
 
-    def button_handler(self, button_name):
+    def invite_action(self, invite, accept):
         def f():
-            win = CTkToplevel(self)
-            W = self.winfo_screenwidth()//2
-            H = self.winfo_screenheight()//2
-            win.title(button_name)
-            win.geometry(f"{W//2}x{H}+{int(0.75*W)}+{H//2}")
-            win.lift()
-            win.focus()
-            win.attributes("-topmost", True)
-            Frame(win, corner_radius=20).pack(padx=20, pady=20, fill="both")
+            if accept:
+                self.data["groups"][invite[0]]["members"].append(self.user.id)
+                self.data["users"][self.user.id]["groups"].append(invite[0])
+                self.data["users"][self.data["groups"]
+                                   [invite[0]]["members"][0]]["invites"].remove([invite[0], invite[1], self.user.id])
+            else:
+                self.data["users"][invite[2]]["invites"].remove(
+                    [invite[0], invite[1], None])
+            self.data["users"][self.user.id]["invites"].remove(invite)
 
+            self.refresh(call=self.groups.button_handler(
+                invite[0]) if accept else None)
         return f
 
     def new_group(self):
@@ -254,14 +353,14 @@ class App(CTk):
         widget = CTkLabel(entry, text="Members", font=("Arial", 18))
         widget.pack(side=LEFT, padx=5)
         members = CTkEntry(entry, height=30, border_width=0,
-                           fg_color="gray90", font=("Arial", 16, "bold"))
+                           fg_color="gray90", font=("Arial", 16))
         members.pack(side=BOTTOM, padx=5, fill="x")
 
         widget = Frame(frame, height=100, fg_color="transparent")
         widget.pack(anchor="nw", padx=10, pady=0, fill="x")
         CTkLabel(widget, text="Use comma to seperate usernames.\nYou can invite members later.\n\n", font=(
             "Arial", 12, "bold"), text_color="gray60", justify="left", wraplength=250).pack(anchor="sw", padx=6, pady=5)
-        CTkButton(frame, text="Creat Group", width=80, font=("Arial", 18, "bold"),
+        CTkButton(frame, text="Creat group", width=80, font=("Arial", 18, "bold"),
                   height=30, corner_radius=15, command=self.create_group(name, members)).pack(side=BOTTOM, pady=10)
 
     def create_group(self, name, members):
@@ -282,24 +381,85 @@ class App(CTk):
                 "transactions": []
             }
             self.data["users"][self.user.id]["groups"].append(group_id)
-
-            for user_id in group_members:
-                self.data["users"][user_id]["invites"].append(
-                    [group_id, str(dt.now()), None])
-                self.data["users"][self.user.id]["invites"].append(
-                    [group_id, str(dt.now()), user_id])
-            self.win.destroy()
-            self.refresh()
+            self.invite(group_id, group_members)
+            self.refresh(call=self.groups.button_handler(group_id))
 
         return f
 
-    def refresh(self):
+    def new_invite(self, group: Group):
+        def f():
+            self.win = CTkToplevel(self)
+            self.win.title("Invite New Members")
+            self.win.geometry(f"{self.scr_w//2}x{int(0.75*self.scr_h)
+                                                 }+{int(0.75*self.scr_w)}+{self.scr_h//2}")
+            self.win.lift()
+            self.win.focus()
+            self.win.attributes("-topmost", True)
+            frame = Frame(self.win, corner_radius=20, width=500, height=6000)
+            frame.pack(expand=True, pady=20, padx=20)
+
+            widget = CTkLabel(frame, text=f"Invite to {group.name}", font=(
+                "Arial Bold", 25), text_color="gray40")
+            widget.pack(padx=15, pady=10, anchor="nw")
+
+            entry = Frame(frame, height=100, fg_color="transparent")
+            entry.pack(anchor="nw", padx=10, pady=2, fill="x")
+            widget = CTkLabel(
+                entry, text="Usernames", font=("Arial", 18))
+            widget.pack(side=LEFT, padx=5)
+
+            entry = Frame(frame, height=100, fg_color="transparent")
+            entry.pack(anchor="nw", padx=10, pady=0, fill="x")
+            members = CTkEntry(entry, height=30, border_width=0,
+                               fg_color="gray90", font=("Arial", 16))
+            members.pack(side=BOTTOM, padx=5, fill="x")
+
+            widget = Frame(frame, height=100, fg_color="transparent")
+            widget.pack(anchor="nw", padx=10, pady=0, fill="x")
+            CTkLabel(widget, text="Use comma to seperate usernames.\n\n", font=(
+                "Arial", 12, "bold"), text_color="gray60", justify="left", wraplength=250).pack(anchor="sw", padx=6, pady=5)
+            CTkButton(frame, text="Invite", width=80, font=("Arial", 18, "bold"),
+                      height=30, corner_radius=15, command=self.create_inivte(group, members)).pack(side=BOTTOM, pady=10)
+
+        return f
+
+    def create_inivte(self, group: Group, entry):
+        def f():
+            new_members = []
+            for id in entry.get().split(","):
+                id = id.strip()
+                if id not in self.data["users"] or id in group.members or id in new_members:
+                    continue
+                new_members.append(id)
+            self.invite(group.id, new_members)
+            self.refresh(call=self.groups.button_handler(group.id))
+
+        return f
+
+    def invite(self, group_id, group_members):
+        for user_id in group_members:
+            self.data["users"][user_id]["invites"].insert(0,
+                                                          [group_id, str(dt.now()), None])
+            self.data["users"][self.user.id]["invites"].insert(0,
+                                                               [group_id, str(dt.now()), user_id])
+            self.side_bar.default_tab = "invites"
+        self.win.destroy()
+
+    def refresh(self, call=None):
         self.root.destroy()
         self.data["users"][self.user.id]["name"] = self.user.name
+        self.last_tab = self.side_bar.default_tab
         self.load(self.user.id, self.data)
+        if call:
+            call()
+
+    def save(self):
+        self.data["users"][self.user.id]["name"] = self.user.name
+        with open("local.json", "w") as file:
+            dump(self.data, file)
 
 
-me = "user3"
+me = "user2"
 data = Data(me)
 data.read_local_data()
 app = App()
