@@ -1,3 +1,6 @@
+from currencyconvert import Conversions
+
+
 class User:
     def __init__(self, id, data=None):
         self.id = id
@@ -5,6 +8,8 @@ class User:
         self.groups = data["users"][id]["groups"]
         self.people = data["users"][id]["people"]
         self.invites = data["users"][id]["invites"]
+        self.settings = data["users"][id]["settings"]
+        self.currency = Conversions(self.settings["default-currency"])
         return
 
 

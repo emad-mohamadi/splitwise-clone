@@ -9,7 +9,7 @@ class Network:
         self.balance = {id: 0 for id in people}
         self.size = len(people)
         self.adjacency = pd.DataFrame(
-            np.zeros((self.size, self.size), int), index=people, columns=people
+            np.zeros((self.size, self.size), float), index=people, columns=people
         )
         return
 
