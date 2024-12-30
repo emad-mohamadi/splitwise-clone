@@ -1,0 +1,118 @@
+[
+    {
+        "id": "user1",
+        "name": "Alice",
+        "avatar": "avatars/male4.png",
+        "invites": [
+            [
+                "97dd185a-bc90-11ef-bbe7-b65ed7df6a69",
+                "2024-12-21 20:15:43.010610",
+                "user3"
+            ],
+            [
+                "97dd185a-bc90-11ef-bbe7-b65ed7df6a69",
+                "2024-12-21 20:15:43.010610",
+                "user2"
+            ],
+            [
+                "group1",
+                "2024-01-01 12:00:00.1",
+                null
+            ],
+            [
+                "group2",
+                "2024-01-02 12:00:00.1",
+                null
+            ]
+        ],
+        "groups": [
+            "group1",
+            "group2",
+            "97dd185a-bc90-11ef-bbe7-b65ed7df6a69",
+            "group3"
+        ],
+        "settings": {
+            "theme": "dark",
+            "notifications": "enabled",
+            "default-currency": "USD"
+        },
+        "currency": "USD",
+        "people": {
+            "user2": {
+                "id": "user2",
+                "name": "David",
+                "transactions": [
+                    {
+                        "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                        "name": "nmd",
+                        "amounts": [
+                            "20.0"
+                        ],
+                        "debtors": [
+                            "user2"
+                        ],
+                        "creditor": "user1",
+                        "currency": "USD",
+                        "date": "2024-12-24 21:59:31.765016",
+                        "repeat": false
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "user2",
+        "name": "David",
+        "avatar": "avatars/male4.png",
+        "invites": [],
+        "groups": [
+            "group1",
+            "group3"
+        ],
+        "settings": {
+            "theme": "light",
+            "notifications": "disabled",
+            "default-currency": "USD"
+        },
+        "currency": "USD",
+        "people": {}
+    },
+    {
+        "id": "user3",
+        "name": "Eve",
+        "avatar": "avatars/male4.png",
+        "invites": [],
+        "groups": [
+            "group2",
+            "group3"
+        ],
+        "settings": {
+            "theme": "blue",
+            "notifications": "enabled",
+            "default-currency": "USD"
+        },
+        "currency": "USD",
+        "people": {
+            "user2": {
+                "id": "user2",
+                "name": "David",
+                "transactions": [
+                    {
+                        "id": "f47ac10b-58cc-4372-a567-0e02b2c3d486",
+                        "name": "Coffee",
+                        "amounts": [
+                            20
+                        ],
+                        "currency": "USD",
+                        "creditor": "user3",
+                        "debtors": [
+                            "user2"
+                        ],
+                        "date": "2024-01-22 12:00:00.1",
+                        "repeat": false
+                    }
+                ]
+            }
+        }
+    }
+]

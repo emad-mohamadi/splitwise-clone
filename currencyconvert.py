@@ -22,18 +22,21 @@ class Conversions:
         return
 
     def update(self, std_currency="USD"):
-        response = requests.get(URL+std_currency)
-        data = response.json()
-
-        if response.status_code != 200:
-            print(f"Error: {data['error-type']}")
+        try:
+            response = requests.get(URL+std_currency)
+            data = response.json()
+            if response.status_code != 200:
+                print(f"Error: {data['error-type']}")
+                return "offline"
+        except:
+            print("No network, Failed to update conversion rates.")
             return "offline"
 
         self.rates = data['conversion_rates']
-        self.last_update = str(datetime.now)
+        self.last_update = str(datetime.now())
         with open(PATH, "w") as file:
             dump({"conversion-rates": self.rates,
-                 "update": self.last_update}, file)
+                 "update": self.last_update}, file, indent=4)
         return "online"
 
     def rate(self, base, target):
@@ -43,7 +46,7 @@ class Conversions:
         return rates[target] / rates[base]
 
     def convert(self, amount, base):
-        return round(amount * self.rate(base, self.default), 2)
+        return round(float(amount) * self.rate(base, self.default), 2)
 
     def check_for_update(self):
         if datetime.now() - self.last_update > timedelta(days=1):
