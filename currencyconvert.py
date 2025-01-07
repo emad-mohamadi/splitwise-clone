@@ -45,8 +45,10 @@ class Conversions:
         rates = data["conversion-rates"]
         return rates[target] / rates[base]
 
-    def convert(self, amount, base):
-        return round(float(amount) * self.rate(base, self.default), 2)
+    def convert(self, amount, base, target=None):
+        if not target:
+            target = self.default
+        return round(float(amount) * self.rate(base, target), 2)
 
     def check_for_update(self):
         if datetime.now() - self.last_update > timedelta(days=1):

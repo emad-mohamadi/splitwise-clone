@@ -59,33 +59,35 @@ class SideBar:
 class FrameList:
     links = {}
 
-    def __init__(self, root, header, objects, commands={}, command=None, width=280, height=150, corner_radius=15, font=("Calibry", 18), title_color="gray40", color=None, font_dif=5, min_height=False):
+    def __init__(self, root, header, objects, commands={}, command=None, width=280, height=150, corner_radius=15, font=("Calibry", 18), title_color="gray40", color=None, font_dif=5, header_min_height=False, min_height=False):
         self.items = {name: None for name in objects["name"]}
         self.commands = commands
         self.title = Frame(
             root, height=header["height"], width=width, fg_color="transparent")
         self.title.pack(side=TOP, padx=10, pady=5, fill="x")
-        widget = CTkLabel(
-            self.title, text=header["label"], font=header["font"], fg_color="transparent", wraplength=280, justify="left", text_color=title_color)
-        widget.place(x=5, y=5)
-
+        CTkLabel(self.title, text=header["label"], font=header["font"], fg_color="transparent",
+                 wraplength=280, justify="left", text_color=title_color).place(x=5, y=5)
+        h = header["height"]-10
         if header["button"]:
-            widget = CTkButton(self.title, width=header["button"][1], height=30, command=command,
-                               corner_radius=corner_radius, text=header["button"][0])
-            widget.place(x=width-header["button"][1]-20, y=7)
+            h -= 50
+            CTkButton(self.title, width=header["button"][1], height=30, command=command,
+                      corner_radius=corner_radius, text=header["button"][0]).pack(pady=7, padx=10, anchor="ne")
         if header["text"]:
             widget = CTkLabel(
                 self.title, text=header["text"], font=(font[0], font[1]-4), fg_color="transparent", wraplength=280, justify="left")
             widget.place(x=6, y=15+header["font"][1])
+        if not header_min_height:
+            CTkButton(self.title, width=5, height=h, text="", fg_color="transparent", hover=False).pack(
+                padx=5, pady=5, anchor="ne")
 
-        scroll = CTkScrollableFrame(
+        self.scroll = CTkScrollableFrame(
             root, height=header["height"], width=width, fg_color="transparent", scrollbar_button_color="gray80", scrollbar_button_hover_color="gray80", )
-        scroll.pack(fill="both", expand=True, side=TOP, padx=0, pady=0)
+        self.scroll.pack(fill="both", expand=True, side=TOP, padx=0, pady=0)
 
         for name in self.items:
             i = objects["name"].index(name)
             self.items[name] = Frame(
-                scroll, height=height, width=width, corner_radius=corner_radius, fg_color=color)
+                self.scroll, height=height, width=width, corner_radius=corner_radius, fg_color=color)
             self.items[name].pack(side=TOP, padx=5, pady=5, fill="x")
 
             widget = CTkLabel(
@@ -96,7 +98,6 @@ class FrameList:
             if objects["button"][i]:
                 widget = CTkButton(self.items[name], width=objects["button"][i][1], height=30, fg_color=objects["button"][i][2][0], hover_color=objects["button"][i][2][1],
                                    corner_radius=corner_radius-5, text=objects["button"][i][0], command=self.button_handler(name) if not objects["button"][i][3] else objects["button"][i][3])
-                # widget.place(x=width-objects["button"][i][1]-20, y=5)
                 h -= 40
                 widget.pack(padx=5, pady=5, anchor="ne")
             if not min_height:
@@ -142,7 +143,7 @@ class MainPanel(Frame):
                               wraplength=wraplength, font=font, justify="left", text_color=color)
         if not_placed:
             return
-        CTkButton(self, text="", width=35, height=53, hover=False, fg_color="transparent",
+        CTkButton(self, text="", width=35, height=53, hover=False, fg_color="transparent", command=command,
                   image=Frame.picture(avatar, (60, 60))).place(x=8, y=5)
         self.title.place(x=85, y=10)
         return
