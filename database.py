@@ -1,9 +1,10 @@
-from supabase import Client, create_client
-import json
-from random import choice, randint
+from supabase import Client
+from dotenv import load_dotenv
+from os import getenv
 
-# Set up Supabase client
-URL = "https://qrdbmqosjdulvsmdvwia.supabase.co"
+
+load_dotenv()
+URL = getenv('SUPABASE_KEY')
 KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGJtcW9zamR1bHZzbWR2d2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU1NzA2MTUsImV4cCI6MjA1MTE0NjYxNX0.9JMjUwv75YA3NJTnd-j88CPJ540nCuTCh_LB-Cccmrc"
 
 
@@ -74,14 +75,3 @@ class Table:
     def __init__(self, data):
         self.data = data
         self.get = {item["id"]: item for item in data}
-
-
-# with open('sample.json') as f:
-#     data = json.load(f)
-
-# ref = DataBase()
-# ref.reset_all()
-# ref.init_user("emad")
-# ref.init_user("danial")
-# ref.init_user("melo")
-# ref.insert("passwords", a)

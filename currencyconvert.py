@@ -1,9 +1,12 @@
-import requests
+import requests as req
 from datetime import datetime, timedelta
 from json import load, dump
+from dotenv import load_dotenv
+from os import getenv
 
-API_KEY = 'ed7f3aadc0d3e6b32b52d9ce'
-URL = f"https://v6.exchangerate-api.com/v6/{API_KEY}/latest/"
+
+load_dotenv()
+URL = getenv('EXCHANGERATES_URL')
 PATH = "exchangerates.json"
 
 
@@ -23,7 +26,7 @@ class Conversions:
 
     def update(self, std_currency="USD"):
         try:
-            response = requests.get(URL+std_currency)
+            response = req.get(URL+std_currency)
             data = response.json()
             if response.status_code != 200:
                 print(f"Error: {data['error-type']}")
