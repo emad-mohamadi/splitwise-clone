@@ -5,7 +5,7 @@ A simple and userfriendly application for splitting expenses and simplifying deb
 
 ## Contents
 - [Usage](#usage)
-- [Core features](#core-features)
+- [Features](#features)
 - [Requirements](#requirements)
 - [Features](#features)
 - [Contact](#contact)
