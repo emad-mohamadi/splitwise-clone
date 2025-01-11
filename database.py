@@ -4,8 +4,8 @@ from os import getenv
 
 
 load_dotenv()
-URL = getenv('SUPABASE_KEY')
-KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZGJtcW9zamR1bHZzbWR2d2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU1NzA2MTUsImV4cCI6MjA1MTE0NjYxNX0.9JMjUwv75YA3NJTnd-j88CPJ540nCuTCh_LB-Cccmrc"
+URL = getenv('SUPABASE_URL')
+KEY = getenv('SUPABASE_KEY')
 
 
 class DataBase(Client):
