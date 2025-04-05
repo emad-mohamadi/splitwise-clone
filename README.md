@@ -1,6 +1,9 @@
 # Splitwise Clone
 A simple and userfriendly application for splitting expenses and simplifying debts between friends and groups.
 
+> [!WARNING]
+> Project is currently non-functional due to database subscription limits.
+> You can check this page for updates.
 ---
 
 ## Contents
